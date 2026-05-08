@@ -9,18 +9,22 @@ public sealed class ContactBook
     private readonly DisjointSetUnion _groups = new();
     private int _nextId = 1;
 
-    public Contact Add(string name, string phone, string email)
+    public Contact Add(string name, string phone, string email, bool allowDuplicateContactData = false)
     {
         EnsureRequired(name, "name");
         EnsureRequired(phone, "phone");
         EnsureRequired(email, "email");
-        EnsureUnique(phone, email);
+
+        if (!allowDuplicateContactData)
+        {
+            EnsureUnique(phone, email);
+        }
 
         var contact = new Contact(_nextId++, name.Trim(), phone.Trim(), email.Trim());
         _contacts.Add(contact);
         _contactsById[contact.Id] = contact;
-        _idsByPhone[contact.Phone] = contact.Id;
-        _idsByEmail[contact.Email] = contact.Id;
+        _idsByPhone.TryAdd(contact.Phone, contact.Id);
+        _idsByEmail.TryAdd(contact.Email, contact.Id);
         _groups.MakeSet(contact.Id);
 
         return contact;
@@ -80,6 +84,24 @@ public sealed class ContactBook
             : null;
     }
 
+    public IReadOnlyList<Contact> GetContacts()
+    {
+        return _contacts.ToList();
+    }
+
+    public IReadOnlyList<Contact> FindContacts(string query)
+    {
+        var normalizedQuery = query.Trim();
+
+        return _contacts
+            .Where(contact =>
+                contact.Name.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase)
+                || contact.Phone.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase)
+                || contact.Email.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(contact => contact.Name)
+            .ToList();
+    }
+
     public IReadOnlyList<Contact> SearchByName(string query)
     {
         return _contacts
@@ -128,6 +150,15 @@ public sealed class ContactBook
             .ToDictionary(
                 group => group.Key,
                 group => (IReadOnlyList<Contact>)group.OrderBy(contact => contact.Name).ToList());
+    }
+
+    public IReadOnlyList<DuplicateContactGroup> FindDuplicateGroups()
+    {
+        return _contacts
+            .GroupBy(contact => contact.Phone)
+            .Where(group => group.Count() > 1)
+            .Select(group => new DuplicateContactGroup(group.Key, group.OrderBy(contact => contact.Name).ToList()))
+            .ToList();
     }
 
     private static void EnsureRequired(string value, string fieldName)
