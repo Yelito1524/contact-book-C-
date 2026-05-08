@@ -5,12 +5,13 @@ A C# console application for managing contacts. The solution demonstrates genera
 ## Features
 
 - Add, list, update, and delete contacts.
-- Search contacts by name.
-- Find a contact quickly by phone number.
-- Keep phone numbers and emails unique.
+- Search contacts by name, phone, or email.
+- Review one contact by id.
+- Find duplicate contacts by phone number.
 - Sort contacts alphabetically.
-- Link related contacts into groups using Union-Find.
-- Show one contact's group or all connected groups.
+- Merge related contacts into groups using Union-Find.
+- Show connected contact groups.
+- Navigate contacts with simple pages.
 
 ## Run the App
 
@@ -27,20 +28,9 @@ dotnet run --project ContactBookApp
 
 ## Algorithms Used
 
-- Linear search filters contacts by name using `Where`.
+- Linear search filters contacts by name, phone, or email using `Where`.
 - Sorting orders contacts alphabetically using `OrderBy`.
 - Hash lookup finds contacts by id, phone, or email in average constant time.
 - Union-Find links contacts into relationship groups.
 - Path compression makes future `Find` operations faster.
 - Union by rank keeps the DSU tree shallow.
-
-## Suggested Video Submission
-
-Record a 10-minute walkthrough showing:
-
-1. The program running from the terminal.
-2. The `Contact`, `ContactBook`, and `DisjointSetUnion` classes.
-3. How lists, dictionaries, sorting, searching, and Union-Find are used.
-4. A demo linking two contacts and showing their group.
-
-Submit the YouTube URL after uploading the recording.
